@@ -1,12 +1,32 @@
 <%- include("partials/header") %>
-    <h1>HI this is a ejs land page!</h1>
+
+<div class="container">
+    <header class="jumbotron">
+        <div class="container">
+            <h1>Welcome!</h1>
+            <p>View our hand-picked campgrounds from all over the world</p>
+            <p>
+            <a class="btn btn-primary btn-large" href="/listpage/new">Add New Campground</a>
+            </p>
+        </div>    
+    </header>
+
+    <div class="row text-center" style="display: flex; flex-wrap: wrap;">
+        <% camps.forEach((camp) => { %>
+            <div class="col-mid-3 col-sm-6">
+                <div class="thumbnail">
+                    <img src="<%= camp.image %>">
+                </div>
+                <div class="caption">
+                    <h4><%= camp.name %></h4>
+                </div>
+                              
+            </div>        
+        <% }) %>
+    </div>
     
-    <% camps.forEach((camp) => { %>
-        <div>
-            <h4><%= camp.name %></h4>
-            <img src="<%= camp.image %>">
-        </div>
-        
-   <% }) %>
+  
+</div>
+    
     
    <%- include("partials/footer") %>
