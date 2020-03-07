@@ -5,6 +5,7 @@ var bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 mongoose.connect("mongodb://localhost/yelp_camp", { useNewUrlParser: true })
 mongoose.set('useUnifiedTopology', true);
+var Campground = require('./models/campground')
 
 app.use(bodyParser.urlencoded({extended:true}))
 
