@@ -2,7 +2,13 @@ const express = require('express');
 const app = express();
 var bodyParser = require('body-parser')
 
+const mongoose = require('mongoose')
+mongoose.connect("mongodb://localhost/yelp_camp", { useNewUrlParser: true })
+mongoose.set('useUnifiedTopology', true);
+
 app.use(bodyParser.urlencoded({extended:true}))
+
+
 
 const port  = 4000;
 
