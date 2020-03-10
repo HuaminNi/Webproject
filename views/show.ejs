@@ -2,4 +2,16 @@
 <h1><%= findrestaurant.name %></h1>
 <img src="<%= findrestaurant.image%>" >
 <p><%= findrestaurant.description %></p>
+<p>
+    <a class="btn btn-success" href="/listpage/<%= findrestaurant._id%>/comments/new">Add New Comments</a>
+</p>
+
+<% findrestaurant.comments.forEach(comment=>{ %>
+    <p>
+        <strong><%= comment.author %></strong> - <%= comment.text %>
+    </p>
+<% }) %>
+
+
+
 <%- include("partials/footer") %>

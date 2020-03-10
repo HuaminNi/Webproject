@@ -6,6 +6,7 @@ const mongoose = require('mongoose')
 mongoose.connect("mongodb://myUserAdmin:admin123@localhost/yelp_camp?authSource=admin", { useNewUrlParser: true })
 mongoose.set('useUnifiedTopology', true);
 var Restaurant = require('./models/restaurants')
+var Comment = require('./models/comment')
 
 app.use(bodyParser.urlencoded({extended:true}))
 
@@ -72,16 +73,66 @@ app.get("/listpage/new", (req, res) => {
 })
 
 app.get("/listpage/:id", (req, res) => {
-    Restaurant.findById(req.params.id, (err,result)=>{
-        if(err){
+    Restaurant.findById(req.params.id).populate("comments").exec(function(err,updateRes){
+        if(err) {
             console.log(err);
-            console.log("The id is not existes")
-        }else {
-            console.log("The corresponding restaurant is:")
-            console.log(result)
-            res.render("show", {findrestaurant:result})
+            console.log("populate wrong")
+        }else{
+            console.log("updateRes is" + updateRes.comments)
+            res.render("show", {findrestaurant:updateRes})
         }
     })
+    // Restaurant.findById(req.params.id, (err,result)=>{
+    //     if(err){
+    //         console.log(err);
+    //         console.log("The id is not existes")
+    //     }else {
+            
+    //         console.log("The corresponding restaurant is:")
+    //         console.log(result.comments)
+    //         res.render("show", {findrestaurant:result})
+    //     }
+    // })
+})
+app.post("/listpage/:id/comments", (req,res) => {
+    Restaurant.findById(req.params.id, (err,therestaurant)=>{
+        if(err) {
+            console.log(err);
+            console.log("The id not existes")
+        }else {
+            Comment.create(req.body.comment,(err,comment)=>{
+                if(err) {
+                    console.log(err);
+                    console.log("Error: Can't create comments")
+                }else {
+                    console.log("comment.text is: " + comment.text)
+                    console.log("comment.author is: " + comment.author)
+                    therestaurant.comments.push(comment)
+                    therestaurant.save()
+                    console.log("here let me show what the data actually is:")
+                    console.log(therestaurant)
+                    res.redirect("/listpage/"+therestaurant._id)
+                }
+
+            })
+            
+        }
+    })
+
+
+app.get("/listpage/:id/comments/new", (req,res) => {
+    Restaurant.findById(req.params.id, (err, result) => {
+        if(err) {
+            console.log(err);
+            console.log("The id not existes")
+        }else {
+            res.render("newComment", {findrestaurant:result})
+        }
+    })
+})
+
+
+    
 })
 
 
