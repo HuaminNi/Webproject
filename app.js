@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 var bodyParser = require('body-parser')
+var path = require('path')
 
 const mongoose = require('mongoose')
 mongoose.connect("mongodb://myUserAdmin:admin123@localhost/yelp_camp?authSource=admin", { useNewUrlParser: true })
@@ -9,6 +10,7 @@ var Restaurant = require('./models/restaurants')
 var Comment = require('./models/comment')
 
 app.use(bodyParser.urlencoded({extended:true}))
+app.use(express.static(__dirname+'/public'))
 
 
 
