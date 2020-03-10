@@ -9,8 +9,31 @@ mongoose.set('useUnifiedTopology', true);
 var Restaurant = require('./models/restaurants')
 var Comment = require('./models/comment')
 
+//=====================
+// WebAuthentication
+//=====================
+var passport = require('passport')
+var localStrategy = require('passport-local')
+var User = require('./models/user')
+
+
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(express.static(__dirname+'/public'))
+
+//========================================
+// Passport Authentication Configuration
+//========================================
+app.use(require('express-session')({
+    secret:"I love rainy days!",
+    resave:false,
+    saveUninitialized:false
+}))
+
+app.use(passport.initialize())
+app.use(passport.session())
+passport.use(new localStrategy(User.authenticate()))
+passport.serializeUser(User.serializeUser())
+passport.deserializeUser(User.deserializeUser())
 
 
 
@@ -96,6 +119,7 @@ app.get("/listpage/:id", (req, res) => {
     //     }
     // })
 })
+
 app.post("/listpage/:id/comments", (req,res) => {
     Restaurant.findById(req.params.id, (err,therestaurant)=>{
         if(err) {
@@ -132,10 +156,30 @@ app.get("/listpage/:id/comments/new", (req,res) => {
         }
     })
 })
-
-
-    
 })
+
+//========================
+//  Authentication Routes
+//========================
+app.get('/register', (req, res) => {
+    res.render('register')
+})
+
+app.post('/register', (req, res) => {
+    //res.send("signing up!")
+    newUser = new User({username:req.body.username})
+    User.register(newUser,req.body.password,(err,user)=>{
+        if(err){
+            console.log(err);
+            return res.render('register')
+        }
+        passport.authenticate('local')(req,res,function(){
+            res.redirect('/listpage')
+        })
+    })
+})
+    
+
 
 
 
