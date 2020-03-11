@@ -13,7 +13,7 @@ var Comment = require('./models/comment')
 // WebAuthentication
 //=====================
 var passport = require('passport')
-var localStrategy = require('passport-local')
+var LocalStrategy = require('passport-local')
 var User = require('./models/user')
 
 
@@ -23,17 +23,22 @@ app.use(express.static(__dirname+'/public'))
 //========================================
 // Passport Authentication Configuration
 //========================================
-app.use(require('express-session')({
-    secret:"I love rainy days!",
-    resave:false,
-    saveUninitialized:false
-}))
+app.use(require("express-session")({
+    secret: "Once again Rusty wins cutest dog!",
+    resave: false,
+    saveUninitialized: false
+}));
 
-app.use(passport.initialize())
-app.use(passport.session())
-passport.use(new localStrategy(User.authenticate()))
-passport.serializeUser(User.serializeUser())
-passport.deserializeUser(User.deserializeUser())
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.use(function(req, res, next){
+    res.locals.currentUser = req.user;
+    next();
+ });
 
 
 
@@ -120,7 +125,7 @@ app.get("/listpage/:id", (req, res) => {
     // })
 })
 
-app.post("/listpage/:id/comments", (req,res) => {
+app.post("/listpage/:id/comments",isLoggedIn, (req,res) => {
     Restaurant.findById(req.params.id, (err,therestaurant)=>{
         if(err) {
             console.log(err);
@@ -144,19 +149,20 @@ app.post("/listpage/:id/comments", (req,res) => {
             
         }
     })
+})
 
-
+//add new comment---only allowed by the logged-in user
 app.get("/listpage/:id/comments/new", (req,res) => {
     Restaurant.findById(req.params.id, (err, result) => {
-        if(err) {
-            console.log(err);
-            console.log("The id not existes")
-        }else {
-            res.render("newComment", {findrestaurant:result})
-        }
+      if(err) {
+        console.log(err);
+        console.log("The id not existes")
+      }else {
+       res.render("newComment", {findrestaurant:result})
+      }
     })
 })
-})
+
 
 //========================
 //  Authentication Routes
@@ -178,8 +184,32 @@ app.post('/register', (req, res) => {
         })
     })
 })
-    
 
+// login route
+app.get("/login", (req,res) => {
+    res.render("login")
+})
+
+// app.post("/login",middleware,(req,res))
+app.post("/login", passport.authenticate("local", 
+    {
+        successRedirect: "/listpage",
+        failureRedirect: "/login"
+    }), function(req, res){
+});
+
+// logout logic
+app.get("/logout",(req,res)=>{
+    req.logout()
+    res.redirect("/listpage")
+})
+
+function isLoggedIn(req, res, next){
+    if(req.isAuthenticated()){
+        return next();
+    }
+    res.redirect("/login");
+}
 
 
 
