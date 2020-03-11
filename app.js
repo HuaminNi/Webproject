@@ -152,7 +152,7 @@ app.post("/listpage/:id/comments",isLoggedIn, (req,res) => {
 })
 
 //add new comment---only allowed by the logged-in user
-app.get("/listpage/:id/comments/new", (req,res) => {
+app.get("/listpage/:id/comments/new", isLoggedIn, (req,res) => {
     Restaurant.findById(req.params.id, (err, result) => {
       if(err) {
         console.log(err);
