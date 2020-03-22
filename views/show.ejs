@@ -16,6 +16,9 @@
                     <h4 class="pull-right">$$</h4>
                     <h4><a><%= findrestaurant.name %></a></h4>
                     <p><%= findrestaurant.description %></p>
+                    <p>
+                        <em>Submitted by <%= findrestaurant.author.username%></em>
+                    </p>
                 </div>
             </div>
             <div class="well">
@@ -26,7 +29,7 @@
                 <% findrestaurant.comments.forEach(comment=>{ %>
                     <div class="row">
                         <div class="col-md-12">
-                            <strong><%= comment.author %></strong>
+                            <strong><%= comment.author.username %></strong>
                             <span class="pull-right">10 days ago</span>
                             <p><%= comment.text %></p>
                         </div>

@@ -3,8 +3,8 @@ var router = express.Router()
 var Restaurant = require("../models/restaurants")
 var Comment = require('../models/comment')
 
-
-router.get("/", (req, res) => {
+// Only allow loggined user to get and post restaurants,so add isLoggedIn
+router.get("/", isLoggedIn, (req, res) => {
     Restaurant.find({},(err,result)=>{
         if(err) {
             console.log(err)
@@ -17,14 +17,26 @@ router.get("/", (req, res) => {
     })  
 })
 
-router.post("/", function(req,res){
+router.post("/", isLoggedIn, function(req,res){
     var name = req.body.campname
     var url = req.body.imgurl
     var desc = req.body.description
-    var newcamp = {name:name, image:url,description:desc}
+    var author = {
+        id:req.user._id,
+        username: req.user.username
+    }
+    var newcamp = {name:name, image:url,description:desc, author:author}
     console.log(newcamp)
-    camps.push(newcamp)
-    res.redirect("/listpage")
+    Restaurant.create(newcamp,(err, newlycreatedRestaurant)=>{
+        if(err) {
+            console.log("cannot create new restaurant because" + err)
+        }else {
+            console.log("Succesfully created the" + newlycreatedRestaurant)
+            res.redirect("/listpage")
+        }
+    })
+   //camps.push(newcamp)
+    
 
 })
 
@@ -68,6 +80,9 @@ router.post("/:id/comments",isLoggedIn, (req,res) => {
                 }else {
                     console.log("comment.text is: " + comment.text)
                     console.log("comment.author is: " + comment.author)
+                    comment.author.id = req.user._id
+                    comment.author.username = req.user.username
+                    comment.save()
                     therestaurant.comments.push(comment)
                     therestaurant.save()
                     console.log("here let me show what the data actually is:")
