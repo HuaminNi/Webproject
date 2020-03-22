@@ -4,12 +4,12 @@ var bodyParser = require('body-parser')
 var path = require('path')
 
 const mongoose = require('mongoose')
-mongoose.connect("mongodb://myUserAdmin:admin123@localhost/yelp_camp?authSource=admin", { useNewUrlParser: true })
+mongoose.connect("mongodb://localhost/yelp_camp", { useUnifiedTopology: true, useNewUrlParser: true })
 mongoose.set('useUnifiedTopology', true);
 var Restaurant = require('./models/restaurants')
 var Comment = require('./models/comment')
 
-//=====================
+//====================
 // WebAuthentication
 //=====================
 var passport = require('passport')
@@ -40,7 +40,12 @@ app.use(function(req, res, next){
     next();
  });
 
+// Routes begins here:
+var restaurantRoutes = require("./routes/restaurant")
+var indexRoutes = require('./routes/index')
 
+app.use('/listpage', restaurantRoutes)
+app.use(indexRoutes)
 
 const port  = 4000;
 
@@ -69,147 +74,11 @@ app.listen(port, () => {
     )
 })
 
-app.get("/", (req, res) => {
-    res.render("landpage")
-})
 
 
-app.get("/listpage", (req, res) => {
-    Restaurant.find({},(err,result)=>{
-        if(err) {
-            console.log(err)
-            console.log("Can't not get access to the database")
-        }else{
-            console.log("the data in database is:")
-            console.log(result)
-            res.render("listpage", {camps:result})
-        }
-    })  
-})
-
-app.post("/listpage", function(req,res){
-    var name = req.body.campname
-    var url = req.body.imgurl
-    var desc = req.body.description
-    var newcamp = {name:name, image:url,description:desc}
-    console.log(newcamp)
-    camps.push(newcamp)
-    res.redirect("/listpage")
-
-})
-
-app.get("/listpage/new", (req, res) => {
-    res.render("new")
-})
-
-app.get("/listpage/:id", (req, res) => {
-    Restaurant.findById(req.params.id).populate("comments").exec(function(err,updateRes){
-        if(err) {
-            console.log(err);
-            console.log("populate wrong")
-        }else{
-            console.log("updateRes is" + updateRes.comments)
-            res.render("show", {findrestaurant:updateRes})
-        }
-    })
-    // Restaurant.findById(req.params.id, (err,result)=>{
-    //     if(err){
-    //         console.log(err);
-    //         console.log("The id is not existes")
-    //     }else {
-            
-    //         console.log("The corresponding restaurant is:")
-    //         console.log(result.comments)
-    //         res.render("show", {findrestaurant:result})
-    //     }
-    // })
-})
-
-app.post("/listpage/:id/comments",isLoggedIn, (req,res) => {
-    Restaurant.findById(req.params.id, (err,therestaurant)=>{
-        if(err) {
-            console.log(err);
-            console.log("The id not existes")
-        }else {
-            Comment.create(req.body.comment,(err,comment)=>{
-                if(err) {
-                    console.log(err);
-                    console.log("Error: Can't create comments")
-                }else {
-                    console.log("comment.text is: " + comment.text)
-                    console.log("comment.author is: " + comment.author)
-                    therestaurant.comments.push(comment)
-                    therestaurant.save()
-                    console.log("here let me show what the data actually is:")
-                    console.log(therestaurant)
-                    res.redirect("/listpage/"+therestaurant._id)
-                }
-
-            })
-            
-        }
-    })
-})
-
-//add new comment---only allowed by the logged-in user
-app.get("/listpage/:id/comments/new", isLoggedIn, (req,res) => {
-    Restaurant.findById(req.params.id, (err, result) => {
-      if(err) {
-        console.log(err);
-        console.log("The id not existes")
-      }else {
-       res.render("newComment", {findrestaurant:result})
-      }
-    })
-})
 
 
-//========================
-//  Authentication Routes
-//========================
-app.get('/register', (req, res) => {
-    res.render('register')
-})
 
-app.post('/register', (req, res) => {
-    //res.send("signing up!")
-    newUser = new User({username:req.body.username})
-    User.register(newUser,req.body.password,(err,user)=>{
-        if(err){
-            console.log(err);
-            return res.render('register')
-        }
-        passport.authenticate('local')(req,res,function(){
-            res.redirect('/listpage')
-        })
-    })
-})
-
-// login route
-app.get("/login", (req,res) => {
-    res.render("login")
-})
-
-// app.post("/login",middleware,(req,res))
-app.post("/login", passport.authenticate("local", 
-    {
-        successRedirect: "/listpage",
-        failureRedirect: "/login"
-    }), function(req, res){
-});
-
-// logout logic
-app.get("/logout",(req,res)=>{
-    req.logout()
-    res.redirect("/listpage")
-})
-
-function isLoggedIn(req, res, next){
-    if(req.isAuthenticated()){
-        return next();
-    }
-    res.redirect("/login");
-}
 
 
 
